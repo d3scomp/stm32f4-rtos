@@ -72,7 +72,7 @@ int _lseek(int file, int ptr, int dir) {
 }
 
 /***************************************************************************/
-
+/*
 int _write(int file, char * ptr, int len) {
 	int index;
 	if (!ptr) {
@@ -90,7 +90,7 @@ int _write(int file, char * ptr, int len) {
 	}
 	return len;
 }
-
+*/
 /***************************************************************************/
 
 int _close(int file) {
