@@ -1,12 +1,24 @@
 TARGET:=rtos
 
+# Library paths (adjust to match your needs)
+STM32F4CUBE=$(ERS_ROOT)/stm32f4cube
+FREERTOS:=$(CURDIR)/FreeRTOS
+
+# Tools gcc + binutils + gdb + openocd
 TOOLCHAIN_PREFIX:=arm-none-eabi-
+CC=$(TOOLCHAIN_PREFIX)gcc
+CXX=$(TOOLCHAIN_PREFIX)g++
+LD=$(TOOLCHAIN_PREFIX)ld
+OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
+SIZE=$(TOOLCHAIN_PREFIX)size
+GDB=/$(TOOLCHAIN_PREFIX)gdb
+AS=$(TOOLCHAIN_PREFIX)as
+OPENOCD=openocd
 
 # Optimization level, can be [0, 1, 2, 3, s].
 OPTLVL:=0
 DBG:=-g3
 
-FREERTOS:=$(CURDIR)/FreeRTOS
 
 STARTUP:=$(CURDIR)/hardware
 LINKER_SCRIPT:=$(CURDIR)/stm32_flash.ld
@@ -86,13 +98,6 @@ CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit
 LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
 
 
-CC=$(TOOLCHAIN_PREFIX)gcc
-CPP=$(TOOLCHAIN_PREFIX)g++
-LD=$(TOOLCHAIN_PREFIX)g++
-OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
-OSIZE=$(TOOLCHAIN_PREFIX)size
-AS=$(TOOLCHAIN_PREFIX)as
-
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
 OBJ := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(OBJ))
 OBJ := $(patsubst %.s,$(BUILD_DIR)/%.o,$(OBJ))
@@ -108,11 +113,11 @@ $(BUILD_DIR)/%.o: %.c
 
 $(BUILD_DIR)/%.o: %.cpp
 	@echo [C++] $(notdir $<)
-	$(CPP) $(CPPFLAGS) $< -c -o $@
+	$(CXX) $(CPPFLAGS) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.s
 	@echo [AS] $(notdir $<)
-	$(AS) $< -o $@
+	$(CC) -c $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.dep: %.c
 	$(CC) -M $(CFLAGS) "$<" > "$@"
@@ -124,15 +129,14 @@ all: $(BIN_DIR)/$(TARGET).elf
 
 $(BIN_DIR)/$(TARGET).elf: $(OBJ)
 	@echo [LD] $(TARGET).elf
-	$(LD) -o $(BIN_DIR)/$(TARGET).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
+	$(CC) -o $(BIN_DIR)/$(TARGET).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
 	@echo [OBJCOPY] $(TARGET).hex
 	@$(OBJCOPY) -O ihex $(BIN_DIR)/$(TARGET).elf $(BIN_DIR)/$(TARGET).hex
-	@$(OSIZE) --format=berkeley $(BIN_DIR)/$(TARGET).elf
+	@$(SIZE) --format=berkeley $(BIN_DIR)/$(TARGET).elf
 	
 #	@echo [OBJCOPY] $(TARGET).bin
 #	@$(OBJCOPY) -O binary $(BIN_DIR)/$(TARGET).elf $(BIN_DIR)/$(TARGET).bin
 
-.PHONY: clean
 
 clean:
 	@echo [RM] OBJ
@@ -143,9 +147,17 @@ clean:
 	@rm -f $(BIN_DIR)/$(TARGET).bin
 	@rm -f $(BIN_DIR)/$(TARGET).map
 
+# Flash final elf into device
 flash: all
-	openocd -s $(ERS_ROOT)/../openocd/scripts -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset; exit"
+	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
+#	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 
+# Debug
+debug: all
+	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | ${OPENOCD} -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
+#	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
 
 
 -include $(DEP)
+
+.PHONY: all flash clean debug
