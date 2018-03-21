@@ -6,7 +6,6 @@ STM32F4CUBE=$(ERS_ROOT)/stm32f4cube
 FREERTOS:=$(CURDIR)/FreeRTOS
 CMSIS=$(STM32F4CUBE)/Drivers/CMSIS
 HAL=$(STM32F4CUBE)/Drivers/STM32F4xx_HAL_Driver
-HAL_BIN=bin
 
 # Tools gcc + binutils + gdb + openocd
 TOOLCHAIN_PREFIX:=arm-none-eabi-
@@ -47,74 +46,124 @@ LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(PROJECT).map $(C
 
 
 # Includes including library includes
-INCLUDES=\
--I./src \
--I./config \
--I$(HAL)/Inc \
--I$(CMSIS)/Device/ST/STM32F4xx/Include \
--I$(CMSIS)/Include
-
-
-
-TSRC = $(CURDIR)/../src
-
+INCLUDES+=-I./src
+INCLUDES+=-I./config
+INCLUDES+=-I$(HAL)/Inc
+INCLUDES+=-I$(CMSIS)/Device/ST/STM32F4xx/Include
+INCLUDES+=-I$(CMSIS)/Include
 INCLUDES+=-I$(CURDIR)/src
 INCLUDES+=-I$(CURDIR)/hardware
 INCLUDES+=-I$(TSRC)
 INCLUDES+=-I$(FREERTOS)/include
 INCLUDES+=-I$(FREERTOS)/portable/GCC/ARM_CM4F
-#INCLUDES+=-I$(CURDIR)/libraries/CMSIS/Device/ST/STM32F4xx/Include
-#INCLUDES+=-I$(CURDIR)/libraries/CMSIS/Include
-#INCLUDES+=-I$(CURDIR)/libraries/STM32F4xx_StdPeriph_Driver/inc
 INCLUDES+=-I$(CURDIR)/config
+
+
+TSRC = $(CURDIR)/../src
+
+
 
 BUILD_DIR = $(CURDIR)/build
 BIN_DIR = $(CURDIR)/binary
 
 # vpath is used so object files are written to the current directory instead
 # of the same directory as their source files
-vpath %.c $(CURDIR)/src $(CURDIR)/libraries/STM32F4xx_StdPeriph_Driver/src \
-	  $(CURDIR)/libraries/syscall $(CURDIR)/hardware $(FREERTOS) \
-	  $(FREERTOS)/portable/MemMang $(FREERTOS)/portable/GCC/ARM_CM4F 
+vpath %.c $(CURDIR)/src $(CURDIR)/libraries/syscall $(CURDIR)/hardware $(FREERTOS) $(FREERTOS)/portable/MemMang $(FREERTOS)/portable/GCC/ARM_CM4F $(HAL)/Src
 
 vpath %.s $(STARTUP)
 
 vpath %.cpp $(CURDIR)/src $(TSRC)
 
 # Project Source Files
-SRC+=startup_stm32f4xx.s
-SRC+=stm32f4xx_it.c
-SRC+=system_stm32f4xx.c
-SRC+=syscalls.c
-SRC+=main.cpp
-SRC+=hooks.cpp
-SRC+=Button.cpp
-SRC+=LED.cpp
+APP_SRC+=startup_stm32f4xx.s
+APP_SRC+=stm32f4xx_it.c
+APP_SRC+=system_stm32f4xx.c
+APP_SRC+=syscalls.c
+APP_SRC+=main.cpp
+APP_SRC+=hooks.cpp
+APP_SRC+=Button.cpp
+APP_SRC+=LED.cpp
 
 # FreeRTOS Source Files
-SRC+=port.c
-SRC+=list.c
-SRC+=queue.c
-SRC+=tasks.c
-SRC+=event_groups.c
-SRC+=timers.c
-SRC+=heap_4.c
+RTOS_SRC+=port.c
+RTOS_SRC+=list.c
+RTOS_SRC+=queue.c
+RTOS_SRC+=tasks.c
+RTOS_SRC+=event_groups.c
+RTOS_SRC+=timers.c
+RTOS_SRC+=heap_4.c
 
-# Standard Peripheral Source Files
-SRC+=stm32f4xx_syscfg.c
-SRC+=misc.c
-SRC+=stm32f4xx_adc.c
-SRC+=stm32f4xx_dac.c
-SRC+=stm32f4xx_dma.c
-SRC+=stm32f4xx_exti.c
-SRC+=stm32f4xx_flash.c
-SRC+=stm32f4xx_gpio.c
-SRC+=stm32f4xx_i2c.c
-SRC+=stm32f4xx_rcc.c
-SRC+=stm32f4xx_spi.c
-SRC+=stm32f4xx_tim.c
-SRC+=stm32f4xx_usart.c
-SRC+=stm32f4xx_rng.c
+# Currenly used STM32F4 HAL module objects
+HAL_SRC+=stm32f4xx_hal.c
+HAL_SRC+=stm32f4xx_hal_gpio.c
+HAL_SRC+=stm32f4xx_hal_tim.c
+HAL_SRC+=stm32f4xx_hal_tim_ex.c
+HAL_SRC+=stm32f4xx_hal_rcc.c
+HAL_SRC+=stm32f4xx_hal_rcc_ex.c
+HAL_SRC+=stm32f4xx_hal_dma.c
+HAL_SRC+=stm32f4xx_hal_dma_ex.c
+HAL_SRC+=stm32f4xx_hal_cortex.c
+HAL_SRC+=stm32f4xx_hal_usart.c
+HAL_SRC+=stm32f4xx_hal_uart.c
+
+# Available HAL module objects
+HAL_SRC_EXTRA+=stm32f4xx_hal_wwdg.c
+HAL_SRC_EXTRA+=stm32f4xx_ll_fmc.c
+HAL_SRC_EXTRA+=stm32f4xx_ll_fsmc.c
+HAL_SRC_EXTRA+=stm32f4xx_ll_sdmmc.c
+HAL_SRC_EXTRA+=stm32f4xx_ll_usb.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_hash.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_hash_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_hcd.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_i2c.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_i2c_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_i2s.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_i2s_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_irda.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_iwdg.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_lptim.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_ltdc.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_ltdc_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_nand.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_nor.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_pccard.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_pcd.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_pcd_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_pwr.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_pwr_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_qspi.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_rng.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_rtc.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_rtc_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_sai.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_sai_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_sdram.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_smartcard.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_spdifrx.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_spi.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_sram.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_adc.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_adc_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_can.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_cec.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_crc.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_cryp.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_cryp_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dac.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dac_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dcmi.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dcmi_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dfsdm.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dma2d.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_dsi.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_eth.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_flash.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_flash_ex.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_flash_ramfunc.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_fmpi2c.c
+HAL_SRC_EXTRA+=stm32f4xx_hal_fmpi2c_ex.o
+
+SRC=$(APP_SRC) $(RTOS_SRC) $(HAL_SRC)
 
 
 
