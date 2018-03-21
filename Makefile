@@ -47,15 +47,9 @@ INCLUDES+=-I$(CMSIS)/Device/ST/STM32F4xx/Include
 INCLUDES+=-I$(CMSIS)/Include
 INCLUDES+=-I$(CURDIR)/src
 INCLUDES+=-I$(CURDIR)/hardware
-INCLUDES+=-I$(TSRC)
 INCLUDES+=-I$(FREERTOS)/include
 INCLUDES+=-I$(FREERTOS)/portable/GCC/ARM_CM4F
 INCLUDES+=-I$(CURDIR)/config
-
-
-TSRC = $(CURDIR)/../src
-
-
 
 BUILD_DIR = $(CURDIR)/build
 BIN_DIR = $(CURDIR)/binary
@@ -66,7 +60,7 @@ vpath %.c $(CURDIR)/src $(CURDIR)/hardware $(FREERTOS) $(FREERTOS)/portable/MemM
 
 vpath %.s $(STARTUP)
 
-vpath %.cpp $(CURDIR)/src $(TSRC)
+vpath %.cpp $(CURDIR)/src
 
 # Project Source Files
 APP_SRC+=startup_stm32f4xx.s
