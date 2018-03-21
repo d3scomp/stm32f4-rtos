@@ -152,18 +152,6 @@ void initUART(){
 	/*USART_Cmd(uart2Props.usart, ENABLE);*/
 }
 
-int _write(int file, char * ptr, int len) {
-/*	for(char* c = ptr; c < ptr + len; c++){
-		while(!(uart2Props.usart->SR & USART_FLAG_TXE)) {
-			// wait here
-			volatile int keepme = 1;
-		}
-		uart2Props.usart->DR = *c;		
-	}
-	return len;*/
-}
-
-
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 

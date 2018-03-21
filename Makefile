@@ -68,7 +68,7 @@ BIN_DIR = $(CURDIR)/binary
 
 # vpath is used so object files are written to the current directory instead
 # of the same directory as their source files
-vpath %.c $(CURDIR)/src $(CURDIR)/libraries/syscall $(CURDIR)/hardware $(FREERTOS) $(FREERTOS)/portable/MemMang $(FREERTOS)/portable/GCC/ARM_CM4F $(HAL)/Src
+vpath %.c $(CURDIR)/src $(CURDIR)/hardware $(FREERTOS) $(FREERTOS)/portable/MemMang $(FREERTOS)/portable/GCC/ARM_CM4F $(HAL)/Src
 
 vpath %.s $(STARTUP)
 
