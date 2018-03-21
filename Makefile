@@ -217,9 +217,9 @@ debug: all
 	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "PROJECT remote | ${OPENOCD} -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
 
 debug1: all
-	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "PROJECT remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
+	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "PROJECT remote | ${OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
 
 
 -include $(DEP)
 
-.PHONY: all flash clean debug
+.PHONY: all flash flash1 clean debug debug1
