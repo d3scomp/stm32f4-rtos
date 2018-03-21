@@ -3,6 +3,9 @@ TARGET:=rtos
 # Library paths (adjust to match your needs)
 STM32F4CUBE=$(ERS_ROOT)/stm32f4cube
 FREERTOS:=$(CURDIR)/FreeRTOS
+CMSIS=$(STM32F4CUBE)/Drivers/CMSIS
+HAL=$(STM32F4CUBE)/Drivers/STM32F4xx_HAL_Driver
+HAL_BIN=bin
 
 # Tools gcc + binutils + gdb + openocd
 TOOLCHAIN_PREFIX:=arm-none-eabi-
@@ -23,17 +26,28 @@ DBG:=-g3
 STARTUP:=$(CURDIR)/hardware
 LINKER_SCRIPT:=$(CURDIR)/stm32_flash.ld
 
+
+# Includes including library includes
+INCLUDES=\
+-I./src \
+-I./config \
+-I$(HAL)/Inc \
+-I$(CMSIS)/Device/ST/STM32F4xx/Include \
+-I$(CMSIS)/Include
+
+
+
 TSRC = $(CURDIR)/../src
 
-INCLUDE=-I$(CURDIR)/src
-INCLUDE=-I$(CURDIR)/hardware
-INCLUDE=-I$(TSRC)
-INCLUDE+=-I$(FREERTOS)/include
-INCLUDE+=-I$(FREERTOS)/portable/GCC/ARM_CM4F
-INCLUDE+=-I$(CURDIR)/libraries/CMSIS/Device/ST/STM32F4xx/Include
-INCLUDE+=-I$(CURDIR)/libraries/CMSIS/Include
-INCLUDE+=-I$(CURDIR)/libraries/STM32F4xx_StdPeriph_Driver/inc
-INCLUDE+=-I$(CURDIR)/config
+INCLUDES+=-I$(CURDIR)/src
+INCLUDES+=-I$(CURDIR)/hardware
+INCLUDES+=-I$(TSRC)
+INCLUDES+=-I$(FREERTOS)/include
+INCLUDES+=-I$(FREERTOS)/portable/GCC/ARM_CM4F
+#INCLUDES+=-I$(CURDIR)/libraries/CMSIS/Device/ST/STM32F4xx/Include
+#INCLUDES+=-I$(CURDIR)/libraries/CMSIS/Include
+#INCLUDES+=-I$(CURDIR)/libraries/STM32F4xx_StdPeriph_Driver/inc
+INCLUDES+=-I$(CURDIR)/config
 
 BUILD_DIR = $(CURDIR)/build
 BIN_DIR = $(CURDIR)/binary
@@ -92,7 +106,7 @@ CDEFS+=-DARM_MATH_CM4
 
 MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb-interwork -MMD -MP -mlittle-endian
 COMMONFLAGS=-O$(OPTLVL) $(DBG) -Wall
-CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(INCLUDE) $(CDEFS)
+CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(INCLUDES) $(CDEFS)
 CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit 
 #LDFLAGS=$(COMMONFLAGS) $(MCUFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
 LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
@@ -150,12 +164,16 @@ clean:
 # Flash final elf into device
 flash: all
 	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
-#	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
+
+flash1: all
+	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
 
 # Debug
 debug: all
 	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | ${OPENOCD} -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
-#	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
+
+debug1: all
+	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
 
 
 -include $(DEP)
