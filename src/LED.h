@@ -3,32 +3,27 @@
  *
  *  Created on: 15. 9. 2013
  *      Author: Tomas Bures <bures@d3s.mff.cuni.cz>
+ *  Modified on: 22.02.2017
+ *      Author: Dominik Skoda <skoda@d3s.mff.cuni.cz>
  */
 
 #ifndef LED_H_
 #define LED_H_
 
-#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
 
 class LED {
 public:
-	struct Properties {
-		GPIO_TypeDef* gpio;
-		uint32_t pin;
-		uint32_t clk;
-	};
 
-	LED(Properties& initProps);
+	LED(uint32_t pin);
 	~LED();
 
 	void on();
 	void off();
 	void init();
 
-	void test(uint32_t pin);
-
 private:
-	Properties props;
+	uint32_t pin;
 };
 
 class PulseLED {
@@ -48,7 +43,7 @@ private:
 
 	void tick();
 
-	static constexpr auto MAX_TICK_LISTENERS = 5;
+	static constexpr auto MAX_TICK_LISTENERS = 5; // Maximum number of pulse leds in the system
 	static PulseLED* tickListeners[MAX_TICK_LISTENERS];
 	static int tickListenersNum;
 };

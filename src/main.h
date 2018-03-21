@@ -8,7 +8,8 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#include "stm32f4xx.h"
+#include "stm32f4xx_hal.h"
+#include "Button.h"
 
 #include "LED.h"
 #include "Button.h"
@@ -19,5 +20,8 @@ extern LED redLed;
 extern LED orangeLed;
 extern LED blueLed;
 extern PulseLED greenPulseLed;
+
+static void SystemClock_Config(void);
+static void Error_Handler(void);
 
 #endif /* MAIN_H_ */
