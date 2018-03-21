@@ -4,11 +4,6 @@
 
 #include <cstdio>
 
-extern "C" {
-	int _write(int file, char * ptr, int len);
-}
-void initUART();
-
 uint32_t mainCycles = 0;
 
 void blinkTask(void* p) {
@@ -38,13 +33,7 @@ struct Properties {
 		uint8_t irqn;
 		uint32_t baudRate;
 	};
-/*
-// Serial console
-Properties uart2Props {
-GPIOA, USART2,
-GPIO_PIN_2, GPIO_PIN_3, GPIO_PinSource2, GPIO_PinSource3, RCC_APB1PeriphClockCmd, RCC_AHB1Periph_GPIOA,
-RCC_APB1Periph_USART2, GPIO_AF_USART2, USART2_IRQn, 921600 };
-*/
+
 
 LED greenLed(GPIO_PIN_12);
 LED orangeLed(GPIO_PIN_13);
@@ -87,7 +76,7 @@ int main(void)
 	infoButton.setPressedListener(handleInfoButtonInterrupt, nullptr);
 	infoButton.init();
 
-	initUART();
+	initUARTConsole(9600);
 	
 	greenLed.init();
 	redLed.init();
@@ -105,48 +94,6 @@ int main(void)
 	} else {
 		printf("System Error!\n");
 	}
-}
-
-
-void initUART(){
-	// Enable pins used by UART2, set them to their alterantive (UART2) function
-/*	RCC_AHB1PeriphClockCmd(uart2Props.clkGPIO, ENABLE);
-
-	GPIO_PinAFConfig(uart2Props.gpio, uart2Props.pinSourceTX, uart2Props.afConfig); // alternative function USARTx_TX
-	GPIO_PinAFConfig(uart2Props.gpio, uart2Props.pinSourceRX, uart2Props.afConfig); // alternative function USARTx_RX
-
-	GPIO_InitTypeDef gpioInitStruct;
-	gpioInitStruct.GPIO_Pin = uart2Props.pinTX | uart2Props.pinRX;
-	gpioInitStruct.GPIO_Mode = GPIO_Mode_AF;
-	gpioInitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-	gpioInitStruct.GPIO_OType = GPIO_OType_PP;
-	gpioInitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-
-	GPIO_Init(uart2Props.gpio, &gpioInitStruct);
-
-
-	uart2Props.clkUSARTCmdFun(uart2Props.clkUSART, ENABLE);
-
-	USART_InitTypeDef usartInitStruct;
-	usartInitStruct.USART_BaudRate = uart2Props.baudRate;
-	usartInitStruct.USART_WordLength = USART_WordLength_8b;
-	usartInitStruct.USART_StopBits = USART_StopBits_1;
-	usartInitStruct.USART_Parity = USART_Parity_No;
-	usartInitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-	usartInitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-
-	USART_Init(uart2Props.usart, &usartInitStruct);
-
-	NVIC_InitTypeDef nvicInitStruct;*/
-
-/*/*	// Enable the USART Interrupt
-	nvicInitStruct.NVIC_IRQChannel = uart2Props.irqn;
-	nvicInitStruct.NVIC_IRQChannelPreemptionPriority = 8;
-	nvicInitStruct.NVIC_IRQChannelSubPriority = 0;
-	nvicInitStruct.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&nvicInitStruct);
-*/
-	/*USART_Cmd(uart2Props.usart, ENABLE);*/
 }
 
 /**

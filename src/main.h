@@ -13,6 +13,7 @@
 
 #include "LED.h"
 #include "Button.h"
+#include "UART.h"
 
 extern Button infoButton;
 extern LED greenLed;

@@ -73,7 +73,7 @@ int _lseek(int file, int ptr, int dir) {
 
 /***************************************************************************/
 
-/*int _write(int file, char * ptr, int len) {
+int _write(int file, char * ptr, int len) {
 	int index;
 	if (!ptr) {
 		return 0;
@@ -89,17 +89,6 @@ int _lseek(int file, int ptr, int dir) {
 		ITM_SendChar((uint8_t)ptr[index]); // Sends it to ST-Link SWO as well so that it can be observed in ST-Link Utility
 	}
 	return len;
-}*/
-
-int _write(int file, char * ptr, int len) {
-/*	for(char* c = ptr; c < ptr + len; c++){
-		while(!(uart2Props.usart->SR & USART_FLAG_TXE)) {
-			// wait here
-			volatile int keepme = 1;
-		}
-		uart2Props.usart->DR = *c;		
-	}
-	return len;*/
 }
 
 /***************************************************************************/

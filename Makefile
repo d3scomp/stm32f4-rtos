@@ -77,6 +77,7 @@ APP_SRC+=main.cpp
 APP_SRC+=hooks.cpp
 APP_SRC+=Button.cpp
 APP_SRC+=LED.cpp
+APP_SRC+=UART.cpp
 
 # FreeRTOS Source Files
 RTOS_SRC+=port.c
