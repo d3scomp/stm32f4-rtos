@@ -73,7 +73,7 @@ int _lseek(int file, int ptr, int dir) {
 
 /***************************************************************************/
 
-int _write(int file, char * ptr, int len) {
+__attribute__((weak)) int _write(int file, char * ptr, int len) {
 	int index;
 	if (!ptr) {
 		return 0;

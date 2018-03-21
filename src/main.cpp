@@ -89,10 +89,10 @@ int main(void)
 	BaseType_t ret = xTaskCreate(blinkTask, "blink", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 	if (ret == pdTRUE) {
-		printf("System Started!\n");
+		printf("System Started!\r\n");
 		vTaskStartScheduler();  // should never return
 	} else {
-		printf("System Error!\n");
+		printf("System Error!\r\n");
 	}
 }
 
