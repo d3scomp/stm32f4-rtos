@@ -96,9 +96,6 @@ int main(void)
 
 	greenPulseLed.init();
 
-	infoButton.setPressedListener(handleInfoButtonInterrupt, nullptr);
-	infoButton.init();
-
 	// Create a task
 	BaseType_t ret = xTaskCreate(blinkTask, "blink", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
