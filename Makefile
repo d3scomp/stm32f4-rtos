@@ -1,4 +1,5 @@
-TARGET:=rtos
+PROJECT:=rtos
+ELF = $(PROJECT).elf
 
 # Library paths (adjust to match your needs)
 STM32F4CUBE=$(ERS_ROOT)/stm32f4cube
@@ -25,6 +26,24 @@ DBG:=-g3
 
 STARTUP:=$(CURDIR)/hardware
 LINKER_SCRIPT:=$(CURDIR)/stm32_flash.ld
+
+
+# Defines
+#CDEFS=-DUSE_STDPERIPH_DRIVER
+#CDEFS+=-DSTM32F4XX
+#CDEFS+=-DHSE_VALUE=8000000
+#CDEFS+=-D__FPU_PRESENT=1
+#CDEFS+=-D__FPU_USED=1
+#CDEFS+=-DARM_MATH_CM4
+CDEFS=-DSTM32F405xx
+
+# Flags
+MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb-interwork -MMD -MP -mlittle-endian
+COMMONFLAGS=-O$(OPTLVL) $(DBG) -Wall
+CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(CDEFS)
+CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit 
+#LDFLAGS=$(COMMONFLAGS) $(MCUFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
+LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(PROJECT).map $(CPPFLAGS)
 
 
 # Includes including library includes
@@ -97,19 +116,6 @@ SRC+=stm32f4xx_tim.c
 SRC+=stm32f4xx_usart.c
 SRC+=stm32f4xx_rng.c
 
-CDEFS=-DUSE_STDPERIPH_DRIVER
-CDEFS+=-DSTM32F4XX
-CDEFS+=-DHSE_VALUE=8000000
-CDEFS+=-D__FPU_PRESENT=1
-CDEFS+=-D__FPU_USED=1
-CDEFS+=-DARM_MATH_CM4
-
-MCUFLAGS=-mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb-interwork -MMD -MP -mlittle-endian
-COMMONFLAGS=-O$(OPTLVL) $(DBG) -Wall
-CFLAGS=$(COMMONFLAGS) $(MCUFLAGS) $(INCLUDES) $(CDEFS)
-CPPFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -std=c++11 -fno-use-cxa-atexit 
-#LDFLAGS=$(COMMONFLAGS) $(MCUFLAGS) -fno-exceptions -ffunction-sections -fdata-sections -nostartfiles -Wl,--gc-sections,-T$(LINKER_SCRIPT)
-LDFLAGS=$(COMMONFLAGS) -T$(LINKER_SCRIPT) -Wl,-Map,$(BIN_DIR)/$(TARGET).map $(CPPFLAGS)
 
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(SRC))
@@ -123,57 +129,57 @@ DEP := $(patsubst %.s,,$(DEP))
 
 $(BUILD_DIR)/%.o: %.c
 	@echo [CC] $(notdir $<)
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.cpp
 	@echo [C++] $(notdir $<)
-	$(CXX) $(CPPFLAGS) $< -c -o $@
+	$(CXX) $(CPPFLAGS) $(INCLUDES) $< -c -o $@
 
 $(BUILD_DIR)/%.o: %.s
 	@echo [AS] $(notdir $<)
-	$(CC) -c $(CPPFLAGS) $< -o $@
+	$(CC) -c $(CPPFLAGS) $(INCLUDES) $< -o $@
 
 $(BUILD_DIR)/%.dep: %.c
-	$(CC) -M $(CFLAGS) "$<" > "$@"
+	$(CC) -M $(CFLAGS) $(INCLUDES) "$<" > "$@"
 
 $(BUILD_DIR)/%.dep: %.cpp
-	$(CPP) -M $(CPPFLAGS) "$<" > "$@"
+	$(CPP) -M $(CPPFLAGS) $(INCLUDES) "$<" > "$@"
 
-all: $(BIN_DIR)/$(TARGET).elf
+all: $(BIN_DIR)/$(PROJECT).elf
 
-$(BIN_DIR)/$(TARGET).elf: $(OBJ)
-	@echo [LD] $(TARGET).elf
-	$(CC) -o $(BIN_DIR)/$(TARGET).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
-	@echo [OBJCOPY] $(TARGET).hex
-	@$(OBJCOPY) -O ihex $(BIN_DIR)/$(TARGET).elf $(BIN_DIR)/$(TARGET).hex
-	@$(SIZE) --format=berkeley $(BIN_DIR)/$(TARGET).elf
+$(BIN_DIR)/$(PROJECT).elf: $(OBJ)
+	@echo [LD] $(PROJECT).elf
+	$(CC) -o $(BIN_DIR)/$(PROJECT).elf $(LDFLAGS) $(OBJ) $(LDLIBS)
+	@echo [OBJCOPY] $(PROJECT).hex
+	@$(OBJCOPY) -O ihex $(BIN_DIR)/$(PROJECT).elf $(BIN_DIR)/$(PROJECT).hex
+	@$(SIZE) --format=berkeley $(BIN_DIR)/$(PROJECT).elf
 	
-#	@echo [OBJCOPY] $(TARGET).bin
-#	@$(OBJCOPY) -O binary $(BIN_DIR)/$(TARGET).elf $(BIN_DIR)/$(TARGET).bin
+#	@echo [OBJCOPY] $(PROJECT).bin
+#	@$(OBJCOPY) -O binary $(BIN_DIR)/$(PROJECT).elf $(BIN_DIR)/$(PROJECT).bin
 
 
 clean:
 	@echo [RM] OBJ
 	@rm -f $(OBJ) $(patsubst %.o,%.d,$(OBJ))
 	@echo [RM] BIN
-	@rm -f $(BIN_DIR)/$(TARGET).elf
-	@rm -f $(BIN_DIR)/$(TARGET).hex
-	@rm -f $(BIN_DIR)/$(TARGET).bin
-	@rm -f $(BIN_DIR)/$(TARGET).map
+	@rm -f $(BIN_DIR)/$(PROJECT).elf
+	@rm -f $(BIN_DIR)/$(PROJECT).hex
+	@rm -f $(BIN_DIR)/$(PROJECT).bin
+	@rm -f $(BIN_DIR)/$(PROJECT).map
 
 # Flash final elf into device
 flash: all
-	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
+	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $(BIN_DIR)/$(PROJECT).elf verify reset exit"
 
 flash1: all
-	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(TARGET).elf verify reset exit"
+	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $(BIN_DIR)/$(PROJECT).elf verify reset exit"
 
 # Debug
 debug: all
-	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | ${OPENOCD} -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
+	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "PROJECT remote | ${OPENOCD} -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
 
 debug1: all
-	$(GDB) $(BIN_DIR)/$(TARGET).elf -ex "target remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
+	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "PROJECT remote | $(OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
 
 
 -include $(DEP)
