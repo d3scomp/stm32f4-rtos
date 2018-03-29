@@ -219,6 +219,11 @@ debug: all
 debug1: all
 	$(GDB) $(BIN_DIR)/$(PROJECT).elf -ex "target remote | ${OPENOCD} -f board/stm32f4discovery.cfg --pipe" -ex load
 
+# SWO console (output of ITM_SendChar)
+swo: all
+	$(OPENOCD) -f board/stm32f4discovery-v2.1.cfg -c "tpiu config internal /dev/stdout uart off 168000000 1680000; init"
+swo1: all
+	$(OPENOCD) -f board/stm32f4discovery.cfg -c "tpiu config internal /dev/stdout uart off 168000000 1680000; init"
 
 -include $(DEP)
 
